@@ -1,4 +1,4 @@
-import { Button } from "../ui/button";
+import { auth, signIn } from "@/app/utils/auth";
 import {
   Card,
   CardContent,
@@ -7,7 +7,9 @@ import {
   CardTitle,
 } from "../ui/card";
 
+import { redirect } from "next/navigation";
 import type { SVGProps } from "react";
+import { SubmitButton } from "../general/SubmitButton";
 const Github = (props: SVGProps<SVGSVGElement>) => (
   <svg
     viewBox="0 0 256 250"
@@ -50,7 +52,13 @@ const Google = (props: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export function LoginForm() {
+export async function LoginForm() {
+  const session = await auth();
+
+  if (session?.user) {
+    return redirect("/");
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <Card>
@@ -62,17 +70,35 @@ export function LoginForm() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-4">
-            <form>
-              <Button className="w-full" variant={"outline"}>
-                <Github className="size-4" />
-                Login with GitHub
-              </Button>
+            <form
+              action={async () => {
+                "use server";
+                await signIn("github", {
+                  redirectTo: "/",
+                });
+              }}
+            >
+              <SubmitButton
+                text="Login with GitHub"
+                width="w-full"
+                variant={"outline"}
+                icon={<Github />}
+              />
             </form>
-            <form>
-              <Button className="w-full" variant={"outline"}>
-                <Google className="size-4" />
-                Login with Google
-              </Button>
+            <form
+              action={async () => {
+                "use server";
+                await signIn("google", {
+                  redirectTo: "/",
+                });
+              }}
+            >
+              <SubmitButton
+                text="Login with Google"
+                width="w-full"
+                variant={"outline"}
+                icon={<Google />}
+              />
             </form>
           </div>
         </CardContent>
